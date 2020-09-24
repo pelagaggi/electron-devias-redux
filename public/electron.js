@@ -3,6 +3,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const url = require('url');
 const isDev = require('electron-is-dev');
+let port = isDev ? 3000 : 5000;
 const express = require('express');
 const webApp = express();
 let expressReady = false, electronReady = false, started = false;
@@ -15,7 +16,7 @@ if (!isDev) {
     webApp.get('/', function (req, res) {
         res.sendFile(path.join(__dirname, 'build', 'index.html'));
     });
-    webApp.listen(process.env.PORT || 3000,
+    webApp.listen(process.env.PORT || port,
         function () {
             expressReady = true;
             if (electronReady && expressReady && started === false) {
@@ -25,7 +26,7 @@ if (!isDev) {
         });
 }
 function createWindow() {
-    // Cria uma janela de navegação.
+    // Create the browser window.
     const win = new BrowserWindow({
         width: 800,
         height: 600,
@@ -35,31 +36,19 @@ function createWindow() {
             enableRemoteModule: true,
             preload: __dirname + '/preload.js',
             worldSafeExecuteJavaScript: true,
-
-            'Content-Security-Policy': ['*']
         },
-        webSecurity: '*'
+        show: false
     })
-    const startUrl = process.env.ELECTRON_START_URL || url.format({
-        pathname: path.join(__dirname, '/../build/index.html'),
-        protocol: 'file:',
-        slashes: true
-    });
-    // e carrega o arquivo index.html do seu aplicativo.
-    win.loadURL('http://localhost:3000');/*
-    if (isDev) {
-        
-    } else {
-        //win.loadFile('./index.html');
-        win.loadURL(`file://${path.join(__dirname, '../build/index.html')}`);
-    }/**/
-    // Abrir o DevTools (aba de ferramentas para desenvolvedores).
-    //win.webContents.openDevTools()
+    // and load the index.html of the app.
+    win.loadURL(`http://localhost:${port}`);
+    win.maximize();
+    // Open the DevTools.
+    win.webContents.openDevTools()
 }
 
-// Este método será chamado quando Electron terminar de inicializar
-// e também estiver pronto para criar novas janelas do navegador.
-// Algumas APIs podem ser usadas somente depois que este evento ocorre.
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
 app.whenReady().then(function () {
     if (isDev) {
         createWindow();
@@ -89,6 +78,5 @@ app.on('activate', () => {
     }
 })
 
-// Nesse arquivo, você pode incluir o resto do código principal
-// de processos do seu aplicativo.
-// Você também pode colocar eles em arquivos separados e requeridos-as aqui.
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and require them here.
