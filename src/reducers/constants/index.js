@@ -1,0 +1,1 @@
+export const myFirstConstant = 1;
